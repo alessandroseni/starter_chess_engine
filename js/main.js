@@ -1,25 +1,40 @@
 const game = new Chess();
 let board = null;
 
-function makeRandomMove() {
-  // chess.js gives us all the possible moves in an array
-  // [ move1, move2, move3 ... ]
-  const possibleMoves = game.moves();
+function isCaptureMove(move) {
+  // Check if the move is a capture move based on the captured piece
+  return move.captured !== null;
+}
 
-  // exit if the game is over
-  if (game.game_over()) return;
+function getCaptureMoves() {
+  // Get all possible moves
+  const moves = game.moves({ verbose: true });
 
-  // chooses a random index in the list
-  const randomIdx = Math.floor(Math.random() * possibleMoves.length);
+  // Filter and return only capture moves
+  return moves.filter((move) => isCaptureMove(move));
+}
 
-  // updates javascript board state
-  game.move(possibleMoves[randomIdx]);
+function makeRandomCaptureMove() {
+  // Get only capture moves
+  const captureMoves = getCaptureMoves();
 
-  // changes html board state
+  // Exit if there are no capture moves or if the game is over
+  if (captureMoves.length === 0 || game.game_over()) return;
+
+  // Choose a random capture move index
+  const randomIdx = Math.floor(Math.random() * captureMoves.length);
+
+  // Get the selected capture move object
+  const selectedMove = captureMoves[randomIdx];
+
+  // Execute the selected capture move
+  game.move(selectedMove);
+
+  // Update the HTML board state
   board.position(game.fen());
 
-  // call this function again in 5 secs
-  setTimeout(makeRandomMove, 500);
+  // Call this function again in 5 seconds
+  setTimeout(makeRandomCaptureMove, 500);
 }
 
 function printPGN() {
@@ -28,5 +43,5 @@ function printPGN() {
 }
 
 board = Chessboard("myBoard", "start");
-setTimeout(makeRandomMove, 500);
+setTimeout(makeRandomCaptureMove, 500);
 setInterval(printPGN, 10000); // Print PGN every 10 seconds
